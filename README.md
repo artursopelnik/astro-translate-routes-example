@@ -1,0 +1,2 @@
+# astro-translate-routes-example
+.
