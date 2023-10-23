@@ -1,0 +1,155 @@
+---
+import {Astronav, MenuItems, MenuIcon} from "astro-navbar";
+import Dropdown from "./Dropdown.astro";
+import {languages} from '@i18n/ui';
+import {useI18n} from '@i18n/utils';
+
+interface NavbarMenuItems {
+    title: string,
+    path?: string
+    children?: {
+        title: string,
+        path: string
+    }[]
+}
+
+const {lang, t, tp, homeLink, r} = useI18n(Astro.url)
+
+const rOrHomeLink = r ? r : ''
+
+const menuItems: NavbarMenuItems[] = [
+    {
+        title: t('nav.blog'),
+        path: '/blog'
+    },
+    {
+        title: t('nav.kontakt'),
+        path: '/kontakt'
+    },
+    {
+        title: languages[lang],
+        children: Object.entries(languages)
+            .filter(([l]) => l !== lang)
+            .map(([l, title]) => ({title, path: tp(rOrHomeLink, l)})),
+    },
+];
+
+const pathname = new URL(Astro.request.url).pathname
+---
+
+<header class="mb-8 flex flex-col lg:flex-row justify-between items-center bg-gray-900 md:p-3 md:pl-5 md:pr-5 p-5">
+    <Astronav>
+        <div class="flex w-full items-center justify-between">
+            <div class="flex w-full lg:w-auto items-center justify-between">
+                <a href={homeLink} class="text-lg text-white font-bold">
+                    Translate Routes with Astro
+                </a>
+                <div class="block lg:hidden">
+                    <div class="astronav-menu text-white">
+                        <MenuIcon>
+                            <div class="menu-hamburger">
+                                <div class="menu-hamburger__icon">
+                                    <span></span>
+                                </div>
+                            </div>
+                        </MenuIcon>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <MenuItems class="hidden w-full lg:w-auto mt-2 lg:flex lg:mt-0">
+            <ul class="flex flex-col lg:flex-row lg:gap-3">
+                {
+                    menuItems.map((item, index) => (
+                      <>
+                          {(!item.children && item.path) && (
+                            <li>
+                                <a href={tp(item.path)}
+                                   class:list={['flex', 'lg:px-3', 'py-2', 'text-white', 'hover:text-gray-400', {
+                                       'font-bold': tp(item.path) === pathname
+                                   }]}>
+                                    {item.title}
+                                </a>
+                            </li>
+                          )}
+                          {item.children && (
+                            <Dropdown
+                              title={item.title}
+                              children={item.children}
+                              lastItem={index === menuItems.length - 1}
+                            />
+                          )}
+                      </>
+                    ))
+                }
+            </ul>
+        </MenuItems>
+    </Astronav>
+</header>
+
+<style>
+    .menu-hamburger {
+        transform: translate(0, -50%);
+        cursor: pointer;
+        font-size: 15px;
+        line-height: 20px;
+        color: currentColor;
+    }
+
+    .menu-hamburger__icon {
+        float: right;
+        position: relative;
+        width: 24px;
+        height: 20px;
+        margin-left: 8px;
+    }
+
+    .menu-hamburger__icon span,
+    .menu-hamburger__icon span:before,
+    .menu-hamburger__icon span:after {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        transition: all 0.1s;
+        background: currentColor;
+    }
+
+    .menu-hamburger__icon span:before {
+        top: -8px;
+    }
+
+    .menu-hamburger__icon span:after {
+        top: 8px;
+    }
+
+    .toggled .menu-hamburger__icon span {
+        background-color: transparent !important;
+    }
+
+    .toggled .menu-hamburger__icon span:before,
+    .toggled .menu-hamburger__icon span:after {
+        top: 0;
+    }
+
+    .toggled .menu-hamburger__icon span:before {
+        transform: rotate(45deg);
+    }
+
+    .toggled .menu-hamburger__icon span:after {
+        transform: rotate(-45deg);
+    }
+</style>
+
+<script>
+    document.addEventListener('astro:page-load', () => {
+        const button = document.querySelector('.astronav-menu')
+        if (button) {
+            button.addEventListener('click', () =>
+                button.classList.toggle("toggled"), false
+            )
+        }
+    }, {once: false});
+</script>

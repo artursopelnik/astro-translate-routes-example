@@ -1,0 +1,53 @@
+---
+import Layout from "./Layout.astro"
+import { useI18n, getLocalizedDate } from "@i18n/utils"
+import type { CollectionEntry } from "astro:content"
+
+interface Props {
+  entry: CollectionEntry<'blog'>
+}
+
+const { entry: { data } } = Astro.props
+
+const { lang, t, tp } = useI18n(Astro.url);
+---
+
+<Layout title={data.title}>
+  <div class="bg-white p-5">
+    <div class="mx-auto max-w-3xl mt-14">
+            <span class="text-blue-400 uppercase tracking-wider text-sm font-medium">
+                {data.category}
+            </span>
+      <h1 class="text-4xl lg:text-5xl font-bold lg:tracking-tight mt-1 lg:leading-tight">
+        {data.title}
+      </h1>
+      <div class="flex gap-2 mt-3 items-center flex-wrap md:flex-nowrap">
+                <span class="text-gray-400">
+                  {data.author}
+                </span>
+        <span class="text-gray-400">•</span>
+        <time class="text-gray-400" datetime={data.publishDate.toISOString()}>
+          {getLocalizedDate(data.publishDate, lang)}
+        </time>
+        <span class="text-gray-400 hidden md:block">•</span>
+        <div class="w-full md:w-auto flex flex-wrap gap-3">
+          {
+            data.tags.map((tag) => (
+              <span class="text-sm text-gray-500">#{tag}</span>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+    <div class="mx-auto prose prose-lg mt-6 max-w-3xl">
+      <slot />
+    </div>
+    <div class="mx-auto max-w-3xl mt-14">
+      <div class="text-center mt-8 mb-8">
+        <a href={tp("/blog")} class="bg-gray-100 px-5 py-3 rounded-md hover:bg-gray-200 transition">
+          ← {t("nav.blog")}
+        </a>
+      </div>
+    </div>
+  </div>
+</Layout>

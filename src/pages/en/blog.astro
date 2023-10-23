@@ -1,0 +1,79 @@
+---
+import { configHelper } from 'config';
+import {getCollection} from "astro:content";
+import Layout from '@layouts/Layout.astro';
+import {useI18n} from '@i18n/utils';
+import {slugify} from 'utils';
+
+const {lang, tp} = useI18n(Astro.url)
+const posts = await getCollection('blog', ({id}) => id.startsWith(lang))
+const latestPosts = posts.sort((a, b) =>
+    +b.data.publishDate - +a.data.publishDate).filter(p => !p.data.draft)
+
+const blog = tp('/blog')
+---
+<Layout title="Blog">
+    <main class="mt-16">
+        <ul class="grid gap-16 max-w-4xl mx-auto">
+            {
+                latestPosts.map((post) => (
+                        <li>
+                            <a href={`${blog}${slugify(post.slug)}${configHelper.isTrailingSlashEnabled ? '/' : ''}`}>
+                                <div class="grid md:grid-cols-2 gap-5 md:gap-10 items-center">
+                                    <div>
+                    <span class="text-blue-400 uppercase tracking-wider text-sm font-medium">
+                      {post.data.category}
+                    </span>
+
+                                        <h2 class="text-3xl font-semibold leading-snug tracking-tight mt-1 ">
+                                            {post.data.title}
+                                        </h2>
+
+                                        <div class="flex gap-2 mt-3">
+                      <span class="text-gray-400">
+                        {post.data.author}
+                      </span>
+                                            <span class="text-gray-400">• </span>
+                                            <time
+                                                    class="text-gray-400"
+                                                    datetime={post.data.publishDate.toISOString()}>
+                                                {post.data.publishDate.toLocaleDateString('de-DE', {
+                                                    year: "numeric",
+                                                    month: "long",
+                                                    day: "2-digit",
+                                                })}
+                                            </time>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                ))
+            }
+        </ul>
+    </main>
+</Layout>
+
+
+<style>
+    .instructions {
+        margin-bottom: 2rem;
+        border: 1px solid rgba(var(--accent-light), 25%);
+        background: linear-gradient(rgba(var(--accent-dark), 66%), rgba(var(--accent-dark), 33%));
+        padding: 1.5rem;
+        border-radius: 8px;
+    }
+
+    .instructions code {
+        font-size: 0.8em;
+        font-weight: bold;
+        background: rgba(var(--accent-light), 12%);
+        color: rgb(var(--accent-light));
+        border-radius: 4px;
+        padding: 0.3em 0.4em;
+    }
+
+    .instructions strong {
+        color: rgb(var(--accent-light));
+    }
+</style>
